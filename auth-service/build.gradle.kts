@@ -14,3 +14,37 @@ dependencies {
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 }
+
+// Excluded: pure Spring wiring/config, plain DTOs/entities/enums -- forcing coverage onto
+// bean-wiring produces tests with no real value. Everything else (services, security,
+// controllers) is in scope.
+val jacocoExclusions = listOf(
+    "com/turbotax/auth/AuthServiceApplication*",
+    "com/turbotax/auth/config/**",
+    "com/turbotax/auth/domain/dto/**",
+    "com/turbotax/auth/domain/entity/**",
+    "com/turbotax/auth/domain/enums/**",
+)
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) { exclude(jacocoExclusions) }
+        })
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) { exclude(jacocoExclusions) }
+        })
+    )
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.98".toBigDecimal()
+            }
+        }
+    }
+}

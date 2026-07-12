@@ -72,14 +72,25 @@ test.describe("Taxpayer and filing creation", () => {
     await page.getByRole("button", { name: "Register" }).click();
     await page.getByRole("link", { name: /Dup Filer E2E/ }).click();
 
-    for (let i = 0; i < 2; i++) {
-      await page.getByRole("button", { name: "Add Filing" }).click();
-      await page.locator('select[name="formType"]').selectOption("F1040");
-      await page.locator('input[name="taxYear"]').fill("2024");
-      await page.locator('input[name="jurisdiction"]').fill("FEDERAL");
-      await page.locator('input[name="filingDate"]').fill("2024-04-01");
-      await page.getByRole("button", { name: "Submit" }).click();
-    }
+    // First submission succeeds and the form auto-closes -- wait for that round trip
+    // (now a multi-service call: refund-service -> taxpayer-service -> ai-service) to finish
+    // before opening the form again, otherwise the second click can land while the first
+    // submission is still in flight and toggle the still-open form closed instead of open.
+    await page.getByRole("button", { name: "Add Filing" }).click();
+    await page.locator('select[name="formType"]').selectOption("F1040");
+    await page.locator('input[name="taxYear"]').fill("2024");
+    await page.locator('input[name="jurisdiction"]').fill("FEDERAL");
+    await page.locator('input[name="filingDate"]').fill("2024-04-01");
+    await page.getByRole("button", { name: "Submit" }).click();
+    await expect(page.locator('select[name="formType"]')).not.toBeVisible();
+
+    // Second submission for the same year/form/jurisdiction should be rejected as a duplicate.
+    await page.getByRole("button", { name: "Add Filing" }).click();
+    await page.locator('select[name="formType"]').selectOption("F1040");
+    await page.locator('input[name="taxYear"]').fill("2024");
+    await page.locator('input[name="jurisdiction"]').fill("FEDERAL");
+    await page.locator('input[name="filingDate"]').fill("2024-04-01");
+    await page.getByRole("button", { name: "Submit" }).click();
 
     await expect(page.getByText("Failed to submit filing.")).toBeVisible();
   });

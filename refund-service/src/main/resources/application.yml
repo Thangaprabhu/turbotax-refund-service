@@ -45,7 +45,7 @@ aws:
     jwt-secret-name: dev/turbotax/jwt
 
 dynamodb:
-  endpoint:
+  endpoint: http://localhost:8000
   table:
     filings: turbotax-filings
 

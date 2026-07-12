@@ -18,4 +18,43 @@ dependencies {
     implementation("org.mapstruct:mapstruct:${property("mapstructVersion")}")
     annotationProcessor("org.mapstruct:mapstruct-processor:${property("mapstructVersion")}")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:localstack")
+}
+
+// Excluded: pure Spring wiring/config, plain DTOs/entities/enums, and MapStruct-generated
+// mapper code -- forcing coverage onto bean-wiring produces tests with no real value.
+// Everything else (services, security, controllers) is in scope.
+val jacocoExclusions = listOf(
+    "com/turbotax/taxpayer/TaxpayerServiceApplication*",
+    "com/turbotax/taxpayer/config/**",
+    "com/turbotax/taxpayer/domain/dto/**",
+    "com/turbotax/taxpayer/domain/entity/**",
+    "com/turbotax/taxpayer/domain/enums/**",
+    "com/turbotax/taxpayer/mapper/**",
+)
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) { exclude(jacocoExclusions) }
+        })
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) { exclude(jacocoExclusions) }
+        })
+    )
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.98".toBigDecimal()
+            }
+        }
+    }
 }
