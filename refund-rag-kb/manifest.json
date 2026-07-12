@@ -1,0 +1,22 @@
+{
+  "name": "refund-issue-rag-knowledge-base",
+  "version": "0.1.0-demo",
+  "created_at": "2026-07-08",
+  "documents": [
+    "irs/refund_status_meanings.md",
+    "irs/delayed_refund_guidance.md",
+    "irs/identity_verification_steps.md",
+    "irs/held_or_stopped_refunds.md",
+    "california/ca_refund_status_guidance.md",
+    "california/ca_processing_timeframes.md",
+    "california/ca_identity_verification.md",
+    "new_york/ny_refund_status_guidance.md",
+    "new_york/ny_request_for_information.md",
+    "new_york/ny_identity_validation.md",
+    "common/common_delay_reasons.md",
+    "common/common_rejection_codes.md",
+    "turbotax_simulated/refund_delay_faq.md",
+    "turbotax_simulated/status_to_action_playbook.md",
+    "turbotax_simulated/ai_guardrails.md"
+  ]
+}

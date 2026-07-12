@@ -1,0 +1,95 @@
+{
+  "title": "TurboTax Refund Service",
+  "uid": "turbotax-refund",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Tax Returns Submitted",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "increase(user_submitted_tax_count_total[1h])",
+        "legendFormat": "Submitted / hr"
+      }]
+    },
+    {
+      "id": 2,
+      "title": "Expected Federal Refunds",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
+      "targets": [{
+        "expr": "increase(expected_federal_return_count_total[1h])",
+        "legendFormat": "Federal / hr"
+      }]
+    },
+    {
+      "id": 3,
+      "title": "Expected State Refunds",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
+      "targets": [{
+        "expr": "increase(expected_state_return_count_total[1h])",
+        "legendFormat": "State / hr"
+      }]
+    },
+    {
+      "id": 4,
+      "title": "Federal Status Updates",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "increase(federal_return_status_updated_count_total[1h])",
+        "legendFormat": "Federal Updates / hr"
+      }]
+    },
+    {
+      "id": 5,
+      "title": "State Status Updates",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
+      "targets": [{
+        "expr": "increase(state_return_status_updated_count_total[1h])",
+        "legendFormat": "State Updates / hr"
+      }]
+    },
+    {
+      "id": 6,
+      "title": "Submission Rate Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "targets": [
+        {
+          "expr": "rate(user_submitted_tax_count_total[5m])",
+          "legendFormat": "Submissions / sec"
+        },
+        {
+          "expr": "rate(expected_federal_return_count_total[5m])",
+          "legendFormat": "Federal / sec"
+        },
+        {
+          "expr": "rate(expected_state_return_count_total[5m])",
+          "legendFormat": "State / sec"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Status Update Rate Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "targets": [
+        {
+          "expr": "rate(federal_return_status_updated_count_total[5m])",
+          "legendFormat": "Federal Updates / sec"
+        },
+        {
+          "expr": "rate(state_return_status_updated_count_total[5m])",
+          "legendFormat": "State Updates / sec"
+        }
+      ]
+    }
+  ]
+}

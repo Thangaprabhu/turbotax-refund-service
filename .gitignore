@@ -1,0 +1,9 @@
+build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+.idea/
+*.iml
+out/
+ml/.venv/
+ml/data/*.csv
+.DS_Store

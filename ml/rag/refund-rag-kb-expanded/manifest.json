@@ -1,0 +1,170 @@
+{
+  "generated": "2026-07-09",
+  "documentCount": 41,
+  "documents": [
+    {
+      "path": "business-tax/business-return-scope.md",
+      "bytes": 511
+    },
+    {
+      "path": "business-tax/name-control-rejection.md",
+      "bytes": 561
+    },
+    {
+      "path": "contacts/california-ftb.md",
+      "bytes": 416
+    },
+    {
+      "path": "contacts/irs.md",
+      "bytes": 430
+    },
+    {
+      "path": "contacts/new-york-dtf.md",
+      "bytes": 425
+    },
+    {
+      "path": "decision-trees/federal-vs-state.md",
+      "bytes": 522
+    },
+    {
+      "path": "decision-trees/refund-issue-routing.md",
+      "bytes": 547
+    },
+    {
+      "path": "faq/can-i-call-tax-authority.md",
+      "bytes": 479
+    },
+    {
+      "path": "faq/federal-and-state-different.md",
+      "bytes": 421
+    },
+    {
+      "path": "faq/no-refund-record.md",
+      "bytes": 446
+    },
+    {
+      "path": "faq/why-is-refund-delayed.md",
+      "bytes": 474
+    },
+    {
+      "path": "irs/amended-returns/amended-return-guidance.md",
+      "bytes": 492
+    },
+    {
+      "path": "irs/delays/common-refund-delays.md",
+      "bytes": 577
+    },
+    {
+      "path": "irs/delays/manual-review.md",
+      "bytes": 593
+    },
+    {
+      "path": "irs/delays/refund-not-received.md",
+      "bytes": 529
+    },
+    {
+      "path": "irs/identity/cp5071-notice.md",
+      "bytes": 506
+    },
+    {
+      "path": "irs/identity/identity-theft-assistance.md",
+      "bytes": 541
+    },
+    {
+      "path": "irs/identity/verify-your-return.md",
+      "bytes": 553
+    },
+    {
+      "path": "irs/offsets/reduced-refund.md",
+      "bytes": 560
+    },
+    {
+      "path": "irs/refund-status/checking-frequency.md",
+      "bytes": 645
+    },
+    {
+      "path": "irs/refund-status/wheres-my-refund-statuses.md",
+      "bytes": 599
+    },
+    {
+      "path": "irs/refund-trace/refund-inquiries-and-trace.md",
+      "bytes": 586
+    },
+    {
+      "path": "irs/rejections/duplicate-dependent-ssn.md",
+      "bytes": 606
+    },
+    {
+      "path": "irs/rejections/name-ssn-errors.md",
+      "bytes": 643
+    },
+    {
+      "path": "prompts/refund-assistant-system-prompt.md",
+      "bytes": 405
+    },
+    {
+      "path": "response-templates/low-confidence.md",
+      "bytes": 279
+    },
+    {
+      "path": "states/california/business/business-refunds.md",
+      "bytes": 449
+    },
+    {
+      "path": "states/california/identity/identity-theft.md",
+      "bytes": 433
+    },
+    {
+      "path": "states/california/notices/verification-required.md",
+      "bytes": 527
+    },
+    {
+      "path": "states/california/refund-status/help-with-refunds.md",
+      "bytes": 471
+    },
+    {
+      "path": "states/california/refund-status/timeframes.md",
+      "bytes": 578
+    },
+    {
+      "path": "states/new-york/notices/request-for-information.md",
+      "bytes": 524
+    },
+    {
+      "path": "states/new-york/refund-status/changed-refund.md",
+      "bytes": 509
+    },
+    {
+      "path": "states/new-york/refund-status/check-refund-status.md",
+      "bytes": 431
+    },
+    {
+      "path": "states/new-york/refund-status/direct-deposit.md",
+      "bytes": 467
+    },
+    {
+      "path": "states/new-york/refund-trace/lost-stolen-check.md",
+      "bytes": 475
+    },
+    {
+      "path": "support-playbooks/business-refund-routing.md",
+      "bytes": 545
+    },
+    {
+      "path": "support-playbooks/identity-verification.md",
+      "bytes": 579
+    },
+    {
+      "path": "support-playbooks/refund-reduced.md",
+      "bytes": 461
+    },
+    {
+      "path": "support-playbooks/refund-sent-not-received.md",
+      "bytes": 603
+    },
+    {
+      "path": "support-playbooks/refund-under-review.md",
+      "bytes": 688
+    }
+  ]
+}

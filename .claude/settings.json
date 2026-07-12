@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew *)",
+      "Bash(nohup ./gradlew *)",
+      "Bash(curl -s http://localhost:8080/*)",
+      "Bash(curl -s -X POST http://localhost:8080/*)",
+      "Bash(curl -s -w * http://localhost:8080/*)",
+      "Bash(curl -s -o /dev/null -w * http://localhost:8080/*)",
+      "Bash(aws dynamodb *)",
+      "Bash(AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local aws dynamodb *)",
+      "Bash(docker ps *)",
+      "Bash(ps *)",
+      "Bash(pgrep *)",
+      "Bash(kill *)"
+    ]
+  }
+}

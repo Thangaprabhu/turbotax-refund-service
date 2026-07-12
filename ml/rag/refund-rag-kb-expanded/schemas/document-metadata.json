@@ -1,0 +1,14 @@
+{
+  "documentId": "string",
+  "title": "string",
+  "authority": "IRS|CA_FTB|NY_DTF|INTERNAL_SIMULATED",
+  "refundType": "FEDERAL|STATE|ANY",
+  "stateCode": "nullable",
+  "taxpayerType": "INDIVIDUAL|BUSINESS|ANY",
+  "topic": "string",
+  "status": "nullable",
+  "sourceUrl": "string",
+  "lastReviewed": "date",
+  "simulatedInternalContent": "boolean",
+  "content": "string"
+}

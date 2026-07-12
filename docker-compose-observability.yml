@@ -1,0 +1,46 @@
+# ── Infrastructure setup specific to Observability/Tracing──────────────────────────────────────────────
+# ── Tracing: Spring Boot app → OTel Collector (:4318) → Jaeger (:4317) → Jaeger UI (:16686)
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    ports:
+      - "4318:4318"
+      - "4317:4317"
+    volumes:
+      - ./otel-collector.yml:/etc/otelcol-contrib/config.yaml
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"   # Jaeger UI
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+volumes:
+  grafana_data:
