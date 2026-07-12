@@ -10,8 +10,21 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": {
-        target: "http://localhost:8080",
+      // Order matters: more specific patterns must come before general ones.
+      "^/api/v1/auth": {
+        target: "http://localhost:8081", // auth-service
+        changeOrigin: true,
+      },
+      "^/api/v1/taxpayers/[^/]+/filings": {
+        target: "http://localhost:8080", // refund-service
+        changeOrigin: true,
+      },
+      "^/api/v1/taxpayers": {
+        target: "http://localhost:8082", // taxpayer-service
+        changeOrigin: true,
+      },
+      "^/api/v1/(predictions|guidance)": {
+        target: "http://localhost:8083", // ai-service
         changeOrigin: true,
       },
     },

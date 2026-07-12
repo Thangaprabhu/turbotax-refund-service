@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: ai-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/turbotax
+    username: turbotax
+    password: turbotax
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8083
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+  level:
+    com.turbotax: DEBUG
