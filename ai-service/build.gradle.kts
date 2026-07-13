@@ -2,6 +2,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     runtimeOnly("org.postgresql:postgresql")
+
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 }
 
 // Excluded: pure Spring wiring, plain enums, and plain-record DTOs -- forcing coverage onto

@@ -8,3 +8,4 @@ ml/.venv/
 ml/data/*.csv
 .DS_Store
 .claude/settings.local.json
+frontend/*.tsbuildinfo
