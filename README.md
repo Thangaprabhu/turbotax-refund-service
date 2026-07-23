@@ -8,60 +8,12 @@ flagged, under review, or already on its way.
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    Client["🖥️ Client<br/>React 18 + Vite"]
+![System Design Blueprint](docs/images/architecture-demo.png)
 
-    subgraph Dev["Vite dev-server proxy — routes by path prefix"]
-        direction TB
-        Proxy[" "]
-    end
-
-    Auth["🔐 auth-service<br/>:8081"]
-    Taxpayer["👤 taxpayer-service<br/>:8082"]
-    AI["🤖 ai-service<br/>:8083 · internal only"]
-    Refund["🧾 refund-service<br/>:8080"]
-
-    Postgres[("🐘 PostgreSQL<br/>:5432 — shared by auth · taxpayer · ai")]
-    Secrets{{"🔑 AWS Secrets Manager<br/>KMS-encrypted JWT keys"}}
-    Ollama{{"🦙 Ollama<br/>local llama3.2:3b"}}
-    DynamoDB[("🗄️ DynamoDB<br/>local :8000 — filings")]
-    RedisC[("⚡ Redis<br/>:6379 — cache")]
-    Kafka[["📨 Kafka<br/>:9092 — 2 topics"]]
-
-    Client -->|"/api/v1/*"| Proxy
-    Proxy -->|"/api/v1/auth/**"| Auth
-    Proxy -->|"/api/v1/taxpayers/**"| Taxpayer
-    Proxy -->|"/api/v1/taxpayers/{id}/filings/**"| Refund
-    Proxy -->|"/api/v1/predictions, /guidance"| AI
-
-    Refund -->|"predict / guidance (HTTP)"| AI
-
-    Auth --> Secrets
-    Auth --> Postgres
-    Taxpayer --> Postgres
-    AI --> Postgres
-    AI --> Ollama
-
-    Refund --> DynamoDB
-    Refund --> RedisC
-    Refund --> Kafka
-
-    classDef svc fill:#eef2ff,stroke:#6d5ce8,color:#1a1a2e;
-    classDef store fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
-    classDef ext fill:#fff8ec,stroke:#d9820b,stroke-dasharray: 4 3,color:#4d3200;
-    class Auth,Taxpayer,AI,Refund svc;
-    class Postgres,DynamoDB,RedisC,Kafka store;
-    class Secrets,Ollama ext;
-```
-
-> Rendered natively by GitHub on this page and in the [Wiki](../../wiki) — no external image
-> hosting required. Source: this fenced ` ```mermaid ` block, editable in place.
-
-**There is no API gateway.** In development, Vite's dev-server proxies each path prefix to the
-right service on `localhost`; in a real deployment this would be a reverse proxy / gateway
-tier, but none exists in this repo today. See [Trade-offs](docs/) for the full list of
-what's real vs. simplified.
+> Simplified for presentation — the "API Gateway" box is illustrative. In this repo, Vite's
+> dev-server proxy is what actually routes each path prefix to its service on `localhost`;
+> there is no real gateway tier yet. See [Trade-offs](docs/) for the full list of what's real
+> vs. simplified.
 
 | Service | Port | Owns | Depends on |
 |---|---|---|---|
