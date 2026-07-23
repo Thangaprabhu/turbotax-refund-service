@@ -8,7 +8,9 @@ flagged, under review, or already on its way.
 
 ## Architecture
 
-<img src="docs/images/architecture-demo.png" alt="System Design Blueprint" width="2200">
+[![System Design Blueprint](docs/images/architecture-demo.png)](docs/images/architecture-demo.png)
+
+*Click the diagram to open it full-size (GitHub caps inline README images to the column width — this opens the raw, full-resolution PNG instead).*
 
 > Simplified for presentation — the "API Gateway" box is illustrative. In this repo, Vite's
 > dev-server proxy is what actually routes each path prefix to its service on `localhost`;
