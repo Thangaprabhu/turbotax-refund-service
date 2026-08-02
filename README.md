@@ -19,10 +19,13 @@ flagged, under review, or already on its way.
 
 | Service | Port | Owns | Depends on |
 |---|---|---|---|
-| **auth-service** | 8081 | `users` (Postgres) | AWS Secrets Manager (JWT keys, KMS-encrypted) |
-| **taxpayer-service** | 8082 | `taxpayers`, `user_taxpayer_access` (Postgres) | auth-service (JWT validation) |
-| **refund-service** | 8080 | Filings (DynamoDB), cache (Redis), events (Kafka) | taxpayer-service, ai-service |
-| **ai-service** | 8083 | Refund guidance corpus + pgvector (Postgres) | Ollama (narrative generation) |
+| [**auth-service**](auth-service/README.md) | 8081 | `users` (Postgres) | AWS Secrets Manager (JWT keys, KMS-encrypted) |
+| [**taxpayer-service**](taxpayer-service/README.md) | 8082 | `taxpayers`, `user_taxpayer_access` (Postgres) | auth-service (JWT validation) |
+| [**refund-service**](refund-service/README.md) | 8080 | Filings (DynamoDB), cache (Redis), events (Kafka) | taxpayer-service, ai-service |
+| [**ai-service**](ai-service/README.md) | 8083 | Refund guidance corpus + pgvector (Postgres) | Ollama (narrative generation) |
+| [**frontend**](frontend/README.md) | 5173 | — (stateless SPA) | all 4 services, via the Vite dev proxy |
+
+Each service has its own README with its API, config keys, and how to run/test it standalone.
 
 ## Getting started
 
