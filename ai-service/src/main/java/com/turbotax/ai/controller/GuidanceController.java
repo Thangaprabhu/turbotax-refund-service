@@ -1,9 +1,9 @@
 package com.turbotax.ai.controller;
 
+import com.turbotax.ai.domain.dto.response.GuidanceResponse;
 import com.turbotax.ai.domain.enums.FormType;
 import com.turbotax.ai.domain.enums.IrsStatus;
-import com.turbotax.ai.guidance.GuidanceResponse;
-import com.turbotax.ai.guidance.RefundGuidanceService;
+import com.turbotax.ai.service.RefundGuidanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

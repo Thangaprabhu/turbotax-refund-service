@@ -14,9 +14,9 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("TurboTax Refund Status API")
+                .title("TurboTax Taxpayer Service API")
                 .version("v1")
-                .description("Tax refund status service for individuals (SSN/1040) and businesses (EIN/1120/1065/941)"))
+                .description("Taxpayer registration and access control for individuals (SSN) and businesses (EIN)"))
             .components(new Components()
                 .addSecuritySchemes("bearerAuth", new SecurityScheme()
                     .type(SecurityScheme.Type.HTTP)

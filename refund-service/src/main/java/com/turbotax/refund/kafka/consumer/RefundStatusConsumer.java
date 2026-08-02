@@ -1,5 +1,6 @@
 package com.turbotax.refund.kafka.consumer;
 
+import com.turbotax.refund.domain.event.FilingCreatedEvent;
 import com.turbotax.refund.domain.event.RefundStatusUpdatedEvent;
 import com.turbotax.refund.metrics.TaxMetrics;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,18 @@ public class RefundStatusConsumer {
         } else {
             taxMetrics.incrementStateReturnStatusUpdated();
         }
+    }
+
+    @KafkaListener(
+        topics = "${app.kafka.topics.filing-created:filing.created}",
+        groupId = "${spring.kafka.consumer.group-id}"
+    )
+    public void onFilingCreated(
+        @Payload FilingCreatedEvent event,
+        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+        @Header(KafkaHeaders.OFFSET) long offset
+    ) {
+        log.info("Consumed FilingCreatedEvent: taxpayer={} formType={} taxYear={} jurisdiction={} partition={} offset={}",
+            event.taxpayerId(), event.formType(), event.taxYear(), event.jurisdiction(), partition, offset);
     }
 }

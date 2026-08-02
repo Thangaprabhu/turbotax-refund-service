@@ -81,7 +81,9 @@ export interface GuidanceDoc {
   id: number;
   topic: string;
   content: string;
-  sourceUrl: string;
+  sourceUrl: string | null;
+  /** True for demo-authored support-playbook/FAQ content -- never actual IRS/state guidance. */
+  simulated: boolean;
 }
 
 export interface GuidanceResponse {

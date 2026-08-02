@@ -1,15 +1,18 @@
-package com.turbotax.ai.guidance;
+package com.turbotax.ai.service;
 
+import com.turbotax.ai.domain.dto.response.GuidanceDoc;
+import com.turbotax.ai.domain.dto.response.GuidanceResponse;
 import com.turbotax.ai.domain.enums.FormType;
 import com.turbotax.ai.domain.enums.IrsStatus;
+import com.turbotax.ai.repository.RefundGuidanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Retrieval-augmented guidance for "what to do about my refund issue" --
@@ -19,19 +22,22 @@ import java.util.stream.Collectors;
  * actual pgvector cosine-similarity search at ingestion time (see
  * ml/rag/build_knowledge_base.py), not hardcoded here.
  *
- * Generation is a deliberate stub: {@link #synthesizeNarrative} assembles the
- * retrieved sources into readable text with light templating instead of
- * calling an LLM, so it costs nothing to run and can't hallucinate a wrong
- * fact. Swap that one method for a real LLM call over the same retrieved
- * sources when ready -- nothing else in this class needs to change.
+ * Generation is delegated to {@link NarrativeSynthesizer}, not done here --
+ * {@link OllamaNarrativeSynthesizer} rewrites the retrieved sources into one
+ * paragraph via a local Ollama model, falling back to plain concatenation on
+ * any failure so a slow or unavailable Ollama never breaks a guidance response.
  */
 @Service
 @RequiredArgsConstructor
 public class RefundGuidanceService {
 
-    private static final Set<IrsStatus> GUIDANCE_ELIGIBLE_STATUSES = EnumSet.of(IrsStatus.FLAGGED, IrsStatus.UNDER_REVIEW);
+    // Everything except RECEIVED (too early for any signal) and DEPOSITED (refund already
+    // landed -- nothing left to guide someone through).
+    private static final Set<IrsStatus> GUIDANCE_ELIGIBLE_STATUSES =
+        EnumSet.of(IrsStatus.FLAGGED, IrsStatus.UNDER_REVIEW, IrsStatus.APPROVED, IrsStatus.SENT);
 
     private final RefundGuidanceRepository repository;
+    private final NarrativeSynthesizer narrativeSynthesizer;
 
     public Optional<GuidanceResponse> getGuidance(FormType formType, String jurisdiction, IrsStatus status) {
         if (!GUIDANCE_ELIGIBLE_STATUSES.contains(status)) {
@@ -41,9 +47,9 @@ public class RefundGuidanceService {
         String situationKey = buildSituationKey(formType, jurisdiction, status);
 
         return repository.findTopDocIds(situationKey)
-            .map(repository::findDocsByIds)
+            .map(ids -> inRelevanceOrder(ids, repository.findDocsByIds(ids)))
             .filter(docs -> !docs.isEmpty())
-            .map(docs -> new GuidanceResponse(situationKey, synthesizeNarrative(docs), docs));
+            .map(docs -> new GuidanceResponse(situationKey, narrativeSynthesizer.synthesize(docs), docs));
     }
 
     private String buildSituationKey(FormType formType, String jurisdiction, IrsStatus status) {
@@ -56,7 +62,14 @@ public class RefundGuidanceService {
         );
     }
 
-    private String synthesizeNarrative(List<GuidanceDoc> docs) {
-        return docs.stream().map(GuidanceDoc::content).collect(Collectors.joining(" "));
+    /**
+     * The repository's SQL IN clause doesn't guarantee result order, so relevance ranking
+     * (the whole point of the precomputed similarity search) has to be restored here.
+     */
+    private List<GuidanceDoc> inRelevanceOrder(List<Long> ids, List<GuidanceDoc> docs) {
+        return ids.stream()
+            .map(id -> docs.stream().filter(d -> d.id() == id).findFirst().orElse(null))
+            .filter(Objects::nonNull)
+            .toList();
     }
 }

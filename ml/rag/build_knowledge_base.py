@@ -44,11 +44,12 @@ def load_docs(conn, model):
             cur.execute(
                 """
                 INSERT INTO refund_guidance_docs
-                    (topic, content, source_url, embedding, applicable_entity_types, applicable_jurisdictions)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                    (topic, content, source_url, embedding, applicable_entity_types,
+                     applicable_jurisdictions, simulated_internal_content)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
                 (doc["topic"], doc["content"], doc["source_url"], embedding,
-                 doc["entity_types"], doc["jurisdictions"]),
+                 doc["entity_types"], doc["jurisdictions"], doc["simulated"]),
             )
     conn.commit()
     print(f"loaded {len(DOCS)} docs")

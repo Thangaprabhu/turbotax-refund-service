@@ -22,9 +22,12 @@ public class AiClient {
     }
 
     public Optional<RefundPrediction> predict(FormType formType, String jurisdiction, IrsStatus irsStatus) {
-        ResponseEntity<RefundPrediction> response = restClient.post()
-            .uri("/api/v1/predictions")
-            .body(new PredictionRequest(formType, jurisdiction, irsStatus))
+        ResponseEntity<RefundPrediction> response = restClient.get()
+            .uri(uriBuilder -> uriBuilder.path("/api/v1/predictions")
+                .queryParam("formType", formType)
+                .queryParam("jurisdiction", jurisdiction)
+                .queryParam("irsStatus", irsStatus)
+                .build())
             .retrieve()
             .toEntity(RefundPrediction.class);
         return Optional.ofNullable(response.getBody());

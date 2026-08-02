@@ -10,6 +10,11 @@ spring:
 server:
   port: 8083
 
+ollama:
+  base-url: http://localhost:11434
+  model: llama3.2:3b
+  timeout-ms: 8000
+
 management:
   endpoints:
     web:

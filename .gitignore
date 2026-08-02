@@ -1,11 +1,33 @@
+# Build output
 build/
 .gradle/
+out/
+*.jar
 !gradle/wrapper/gradle-wrapper.jar
+
+# IDE
 .idea/
 *.iml
-out/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
 ml/.venv/
 ml/data/*.csv
-.DS_Store
-.claude/settings.local.json
+__pycache__/
+*.pyc
+
+# Node / frontend
+node_modules/
+dist/
 frontend/*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+
+# Claude
+.claude/settings.local.json

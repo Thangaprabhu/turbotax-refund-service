@@ -1,7 +1,7 @@
 package com.turbotax.ai.unit;
 
-import com.turbotax.ai.guidance.GuidanceDoc;
-import com.turbotax.ai.guidance.RefundGuidanceRepository;
+import com.turbotax.ai.domain.dto.response.GuidanceDoc;
+import com.turbotax.ai.repository.RefundGuidanceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,17 +88,18 @@ class RefundGuidanceRepositoryTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void findDocsByIds_shouldPreserveRequestedOrder_notSqlResultOrder() throws SQLException {
-        // SQL returns docs in a different order than requested; findDocsByIds must reorder to match ids.
-        GuidanceDoc doc1 = new GuidanceDoc(1L, "topic1", "content1", "https://a");
-        GuidanceDoc doc2 = new GuidanceDoc(2L, "topic2", "content2", "https://b");
+    void findDocsByIds_shouldReturnDocs_inWhateverOrderTheQueryYields() throws SQLException {
+        // Order preservation is the service's job now (relevance ranking), not the repository's --
+        // this just confirms the repository passes the query result through unmodified.
+        GuidanceDoc doc1 = new GuidanceDoc(1L, "topic1", "content1", "https://a", false);
+        GuidanceDoc doc2 = new GuidanceDoc(2L, "topic2", "content2", "https://b", false);
 
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(doc2, doc1));
 
         var result = repository.findDocsByIds(List.of(1L, 2L));
 
-        assertThat(result).containsExactly(doc1, doc2);
+        assertThat(result).containsExactly(doc2, doc1);
     }
 
     @SuppressWarnings("unchecked")
@@ -109,6 +110,7 @@ class RefundGuidanceRepositoryTest {
         when(rs.getString("topic")).thenReturn("cp05_notice");
         when(rs.getString("content")).thenReturn("Some content.");
         when(rs.getString("source_url")).thenReturn("https://irs.gov/cp05");
+        when(rs.getBoolean("simulated_internal_content")).thenReturn(false);
 
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Object[].class)))
             .thenAnswer(inv -> {
@@ -123,5 +125,6 @@ class RefundGuidanceRepositoryTest {
         assertThat(result.get(0).topic()).isEqualTo("cp05_notice");
         assertThat(result.get(0).content()).isEqualTo("Some content.");
         assertThat(result.get(0).sourceUrl()).isEqualTo("https://irs.gov/cp05");
+        assertThat(result.get(0).simulated()).isFalse();
     }
 }

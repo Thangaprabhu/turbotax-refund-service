@@ -11,12 +11,10 @@ dependencies {
 // engine, guidance retrieval, controllers) is in scope.
 val jacocoExclusions = listOf(
     "com/turbotax/ai/AiServiceApplication*",
+    "com/turbotax/ai/config/**",
     "com/turbotax/ai/domain/enums/**",
-    "com/turbotax/ai/prediction/PredictionInput*",
-    "com/turbotax/ai/prediction/PredictionRequest*",
-    "com/turbotax/ai/prediction/RefundPrediction*",
-    "com/turbotax/ai/guidance/GuidanceDoc*",
-    "com/turbotax/ai/guidance/GuidanceResponse*",
+    "com/turbotax/ai/service/PredictionInput*",
+    "com/turbotax/ai/domain/dto/response/**",
 )
 
 tasks.named<JacocoReport>("jacocoTestReport") {

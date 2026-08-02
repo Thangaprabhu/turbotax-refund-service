@@ -1,10 +1,10 @@
 package com.turbotax.ai.unit;
 
+import com.turbotax.ai.domain.dto.response.RefundPrediction;
 import com.turbotax.ai.domain.enums.FormType;
 import com.turbotax.ai.domain.enums.IrsStatus;
-import com.turbotax.ai.prediction.PredictionInput;
-import com.turbotax.ai.prediction.RefundPrediction;
-import com.turbotax.ai.prediction.RulesEngineRefundPredictor;
+import com.turbotax.ai.service.PredictionInput;
+import com.turbotax.ai.service.RulesEngineRefundPredictor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;

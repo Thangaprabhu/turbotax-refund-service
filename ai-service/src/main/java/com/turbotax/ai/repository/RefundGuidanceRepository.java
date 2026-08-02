@@ -1,5 +1,6 @@
-package com.turbotax.ai.guidance;
+package com.turbotax.ai.repository;
 
+import com.turbotax.ai.domain.dto.response.GuidanceDoc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -7,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -31,23 +31,18 @@ public class RefundGuidanceRepository {
         return rows.stream().findFirst();
     }
 
+    /** Returned in whatever order the SQL IN clause happens to yield -- not relevance order. */
     public List<GuidanceDoc> findDocsByIds(List<Long> ids) {
         if (ids.isEmpty()) {
             return List.of();
         }
         String placeholders = String.join(",", ids.stream().map(id -> "?").toList());
-        List<GuidanceDoc> docs = jdbcTemplate.query(
-            "SELECT id, topic, content, source_url FROM refund_guidance_docs WHERE id IN (" + placeholders + ")",
-            (rs, rowNum) -> new GuidanceDoc(rs.getLong("id"), rs.getString("topic"), rs.getString("content"), rs.getString("source_url")),
+        return jdbcTemplate.query(
+            "SELECT id, topic, content, source_url, simulated_internal_content FROM refund_guidance_docs WHERE id IN (" + placeholders + ")",
+            (rs, rowNum) -> new GuidanceDoc(rs.getLong("id"), rs.getString("topic"), rs.getString("content"),
+                rs.getString("source_url"), rs.getBoolean("simulated_internal_content")),
             ids.toArray()
         );
-
-        // Preserve the relevance order from the precomputed similarity search --
-        // the SQL IN clause above does not guarantee result order.
-        return ids.stream()
-            .map(id -> docs.stream().filter(d -> d.id() == id).findFirst().orElse(null))
-            .filter(Objects::nonNull)
-            .toList();
     }
 
     private static List<Long> toLongList(Array array) throws SQLException {

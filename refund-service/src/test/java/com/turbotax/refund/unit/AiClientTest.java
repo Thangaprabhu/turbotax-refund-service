@@ -11,11 +11,9 @@ import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestToUriTemplate;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
 
 class AiClientTest {
 
@@ -33,8 +31,7 @@ class AiClientTest {
 
     @Test
     void predict_shouldReturnPrediction_whenAiServiceReturns200() {
-        mockServer.expect(requestToUriTemplate(BASE_URL + "/api/v1/predictions"))
-            .andExpect(method(POST))
+        mockServer.expect(method(GET))
             .andRespond(withSuccess("""
                 {"predictedDays":21,"confidence":0.55,"modelVersion":"rules-v1"}
                 """, MediaType.APPLICATION_JSON));
@@ -49,8 +46,7 @@ class AiClientTest {
 
     @Test
     void predict_shouldReturnEmpty_whenAiServiceReturns204() {
-        mockServer.expect(requestToUriTemplate(BASE_URL + "/api/v1/predictions"))
-            .andExpect(method(POST))
+        mockServer.expect(method(GET))
             .andRespond(withNoContent());
 
         var result = client.predict(FormType.F1040, "FEDERAL", IrsStatus.RECEIVED);

@@ -1,4 +1,6 @@
-package com.turbotax.ai.prediction;
+package com.turbotax.ai.service;
+
+import com.turbotax.ai.domain.dto.response.RefundPrediction;
 
 import java.util.Optional;
 

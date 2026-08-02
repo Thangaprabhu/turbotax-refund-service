@@ -1,5 +1,6 @@
-package com.turbotax.ai.prediction;
+package com.turbotax.ai.service;
 
+import com.turbotax.ai.domain.dto.response.RefundPrediction;
 import com.turbotax.ai.domain.enums.FormType;
 import com.turbotax.ai.domain.enums.IrsStatus;
 import org.springframework.stereotype.Component;

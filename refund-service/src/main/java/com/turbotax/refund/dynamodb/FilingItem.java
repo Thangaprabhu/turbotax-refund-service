@@ -2,6 +2,7 @@ package com.turbotax.refund.dynamodb;
 
 import com.turbotax.refund.domain.enums.FormType;
 import com.turbotax.refund.domain.enums.IrsStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
@@ -48,8 +49,11 @@ public class FilingItem {
     @DynamoDbBean
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
     public static class StatusHistoryEntry {
+        @Schema(example = "UNDER_REVIEW")
         private String status;
+        @Schema(example = "2026-07-11T03:29:44.102301Z")
         private String timestamp;
+        @Schema(example = "irs-poller")
         private String source;
     }
 }

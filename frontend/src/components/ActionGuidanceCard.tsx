@@ -1,5 +1,5 @@
 import type { GuidanceResponse, IrsStatus } from "@/types";
-import { AlertTriangle, Clock, ExternalLink } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, ExternalLink, Send } from "lucide-react";
 
 interface GuidanceAction {
   label: string;
@@ -35,6 +35,24 @@ const GUIDANCE: Partial<Record<IrsStatus, GuidanceConfig>> = {
       { label: "Check status on IRS.gov", href: "https://www.irs.gov/wheres-my-refund" },
     ],
     tip: "If it's been more than 60 days past your original estimate, the IRS refund hotline is 800-829-1954.",
+  },
+  APPROVED: {
+    icon: CheckCircle2,
+    tone: "border-green-200 bg-green-50 text-green-800",
+    title: "Refund approved",
+    body: "The refund has been approved and is expected to be sent soon. In some cases the amount sent can differ from the original estimate — for example if a debt offset applies — so treat the official tracker as the source of truth once it's sent.",
+    actions: [
+      { label: "Check status on IRS.gov", href: "https://www.irs.gov/wheres-my-refund" },
+    ],
+  },
+  SENT: {
+    icon: Send,
+    tone: "border-blue-200 bg-blue-50 text-blue-800",
+    title: "Refund sent",
+    body: "The refund has been sent. Direct deposit typically arrives within a few days; a mailed paper check can take one to several additional weeks. If it's been longer than that and the refund still hasn't arrived, a refund trace may be the next step.",
+    actions: [
+      { label: "Check status on IRS.gov", href: "https://www.irs.gov/wheres-my-refund" },
+    ],
   },
 };
 
@@ -82,9 +100,18 @@ export default function ActionGuidanceCard({ status, guidance }: Props) {
           <ul className="mt-1 space-y-0.5 list-disc list-inside">
             {guidance.sources.map((s) => (
               <li key={s.id}>
-                <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">
-                  {s.topic.replace(/_/g, " ")}
-                </a>
+                {s.sourceUrl ? (
+                  <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">
+                    {s.topic.replace(/_/g, " ")}
+                  </a>
+                ) : (
+                  <span>{s.topic.replace(/_/g, " ")}</span>
+                )}
+                {s.simulated && (
+                  <span className="ml-1.5 rounded-full bg-black/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                    Simulated
+                  </span>
+                )}
               </li>
             ))}
           </ul>

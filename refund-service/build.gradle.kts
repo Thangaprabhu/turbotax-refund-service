@@ -39,7 +39,6 @@ val jacocoExclusions = listOf(
     "com/turbotax/refund/mapper/**",
     "com/turbotax/refund/client/GuidanceDoc*",
     "com/turbotax/refund/client/GuidanceResponse*",
-    "com/turbotax/refund/client/PredictionRequest*",
     "com/turbotax/refund/client/RefundPrediction*",
 )
 

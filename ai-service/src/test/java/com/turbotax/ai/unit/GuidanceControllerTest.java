@@ -1,10 +1,10 @@
 package com.turbotax.ai.unit;
 
 import com.turbotax.ai.controller.GuidanceController;
+import com.turbotax.ai.domain.dto.response.GuidanceResponse;
 import com.turbotax.ai.domain.enums.FormType;
 import com.turbotax.ai.domain.enums.IrsStatus;
-import com.turbotax.ai.guidance.GuidanceResponse;
-import com.turbotax.ai.guidance.RefundGuidanceService;
+import com.turbotax.ai.service.RefundGuidanceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
