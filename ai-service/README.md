@@ -47,3 +47,21 @@ doc text instead of a generated paragraph.
 ```bash
 ./gradlew :ai-service:test   # 98% JaCoCo gate
 ```
+
+## Key terms
+
+- **RAG (Retrieval-Augmented Generation)** — the overall shape of the guidance flow: retrieve
+  relevant documents first, then have an LLM turn them into prose, so the model explains real
+  retrieved content instead of inventing an answer from nothing.
+- **pgvector** — a Postgres extension for storing and querying embedding vectors. It holds the
+  guidance-doc corpus, though retrieval at request time is a deterministic `situation_key`
+  lookup, not a live vector similarity search — ranking is precomputed offline (see
+  [`ml/rag/`](../ml/rag)).
+- **situation_key** — a deterministic key built from form type + jurisdiction + IRS status
+  (e.g. `FLAGGED_INDIVIDUAL_FEDERAL`), used to look up which docs apply. Same inputs always
+  produce the same key and the same docs — there's no per-request ranking variance.
+- **Ollama** — a local LLM runtime (`llama3.2:3b`) this service calls to rewrite retrieved
+  docs into one plain-English paragraph. If it's slow, down, or returns nothing usable, the
+  response falls back to the docs concatenated as plain text instead.
+- **Rules engine** — the refund-timing predictor (`RulesEngineRefundPredictor`) is a
+  deterministic lookup table keyed on form type/jurisdiction/status, not a trained ML model.

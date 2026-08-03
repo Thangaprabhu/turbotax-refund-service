@@ -47,3 +47,19 @@ endpoint/credentials in `AwsConfig` — no local emulator is wired up yet.
 ```bash
 ./gradlew :taxpayer-service:test   # 98% JaCoCo gate
 ```
+
+## Key terms
+
+- **AWS KMS (Key Management Service)** — called directly here (not just underlying Secrets
+  Manager, as in auth-service) to encrypt and decrypt SSN/EIN via `PiiEncryptionService`
+  before either value touches the database or leaves this service.
+- **PII (Personally Identifiable Information)** — SSN/EIN in this service's case. It's the
+  reason that field is encrypted at the column level instead of relying on disk/transport
+  encryption alone.
+- **SHA-256 hash** — a one-way hash of the raw SSN/EIN, stored alongside the KMS ciphertext.
+  Since the ciphertext itself isn't queryable, this hash is what lookups actually match
+  against — it can confirm equality but can't be reversed back to the original value.
+- **JWT validation** — this service verifies the token's signature locally against the same
+  signing key auth-service uses; it does not call auth-service on every request.
+- **Pagination** — `page`/`size` query params on list endpoints, so a caller with hundreds of
+  taxpayers gets one page back, not the whole table.

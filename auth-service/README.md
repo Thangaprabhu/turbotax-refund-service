@@ -45,3 +45,19 @@ loaded (see `SecretsManagerService`).
 ```bash
 ./gradlew :auth-service:test   # 98% JaCoCo gate
 ```
+
+## Key terms
+
+- **BCrypt** — adaptive password-hashing algorithm with a built-in salt. Passwords are hashed
+  with it before being stored in `users`; the raw password is never persisted or logged.
+- **JWT (JSON Web Token)** — a signed, self-contained token this service issues on
+  register/login. It carries the user id and an expiry, and every other service validates its
+  signature locally rather than calling back here to check it.
+- **AWS Secrets Manager** — where the JWT signing keypair (`dev/turbotax/jwt`) actually lives,
+  instead of a config file or environment variable. Fetched once at startup and cached in
+  memory (`SecretsManagerService`) — a failure here means the service refuses to start.
+- **KMS (Key Management Service)** — the AWS encryption-key service Secrets Manager uses to
+  encrypt that JWT keypair at rest. auth-service doesn't call KMS directly; it's what protects
+  the secret it reads.
+- **Bearer token** — the `Authorization: Bearer <jwt>` header convention. Every other service
+  in this repo forwards or validates this header rather than re-authenticating the user.

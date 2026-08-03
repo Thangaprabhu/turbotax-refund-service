@@ -52,3 +52,21 @@ docker compose up -d dynamodb-local redis kafka
 ```bash
 ./gradlew :refund-service:test   # 98% JaCoCo gate
 ```
+
+## Key terms
+
+- **DynamoDB** — AWS's managed NoSQL key-value store. Filings are stored one partition per
+  taxpayer (`taxpayerId` as partition key, a composite `sk` of year#form#jurisdiction as sort
+  key), so a taxpayer's full filing history is always a single fast query.
+- **Redis** — an in-memory cache sitting in front of DynamoDB reads, with a 4-hour TTL. Writes
+  (create/update) explicitly evict the cache entry rather than waiting for it to expire, so a
+  status update is never masked by stale cached data.
+- **Kafka** — an append-only event log. This service publishes `filing.created` and
+  `refund.status.updated` to it without knowing or caring who (if anyone) is consuming them —
+  decoupling this service from whatever reacts to those events.
+- **Virtual threads** (Java 21, `spring.threads.virtual.enabled`) — lightweight threads that
+  let blocking calls (to taxpayer-service, ai-service, DynamoDB) not tie up a limited OS-thread
+  pool under load, without rewriting the code to be reactive/async.
+- **Bearer token forwarding** — this service never validates the JWT itself; it forwards the
+  caller's raw `Authorization` header to taxpayer-service on every request and trusts its
+  access decision.

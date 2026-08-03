@@ -149,3 +149,19 @@ traces to Jaeger — end to end across a single request, not just per-service.
 - [`docs/ai-refund-prediction-scope.md`](docs/ai-refund-prediction-scope.md) — AI prediction & RAG guidance design
 - [`refund-rag-kb/README.md`](refund-rag-kb/README.md) — RAG knowledge base corpus notes
 - Full High-Level Design (data model, request flow, trade-offs, scale) — see the project [Wiki](../../wiki)
+
+## Key terms
+
+Cross-cutting concepts that span services — see each service's own README for terms specific
+to it (e.g. BCrypt in auth-service, DynamoDB in refund-service, RAG/Ollama in ai-service).
+
+- **Microservices** — the app is split into 4 independently deployable Spring Boot services,
+  each owning its own slice of data, rather than one monolith backed by one shared database.
+- **Distributed tracing (OTLP / Jaeger)** — every request is stamped with a trace ID that
+  follows it across all 4 services. A single slow or failing request can be followed
+  end-to-end in Jaeger's UI instead of grepped out of 4 separate service logs by hand.
+- **JaCoCo coverage gate** — each service's Gradle build fails if line coverage drops below
+  98%, enforced per-module in that service's `build.gradle.kts`.
+- **API Gateway vs. reverse proxy** — the architecture diagram shows a gateway for
+  presentation; the routing that actually exists today is Vite's dev-server proxy (see the
+  note under [Architecture](#architecture)).

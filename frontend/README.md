@@ -43,3 +43,15 @@ npm run test:e2e:ui   # Playwright, interactive UI mode
 
 E2E tests expect the full stack (all 4 services + infra) up via `docker compose up -d` and
 each service running, plus the dev server itself.
+
+## Key terms
+
+- **Vite dev-server proxy** — rewrites `/api/v1/*` requests to the right backend service by
+  path prefix during local dev (see `vite.config.ts`). This is the actual routing mechanism
+  today — there's no real API gateway in front of the app yet.
+- **React Hook Form + Zod** — form state is managed by React Hook Form; Zod schemas declare
+  the validation rules once and get enforced on submit, instead of hand-rolled field checks.
+- **Radix UI** — unstyled, accessible component primitives (dialogs, dropdowns, etc.) that
+  this app's own styling is layered on top of, rather than a themed component library.
+- **Playwright** — the E2E test framework. It drives the real rendered app in a real browser
+  against the real backend services, not a mocked API layer.
