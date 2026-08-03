@@ -11,6 +11,7 @@
       "type": "stat",
       "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
       "targets": [{
         "datasource": {"type": "prometheus", "uid": "prometheus"},
         "expr": "increase(user_submitted_tax_count_total[1h])",
@@ -23,6 +24,7 @@
       "type": "stat",
       "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
       "targets": [{
         "datasource": {"type": "prometheus", "uid": "prometheus"},
         "expr": "increase(expected_federal_return_count_total[1h])",
@@ -35,6 +37,7 @@
       "type": "stat",
       "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
       "targets": [{
         "datasource": {"type": "prometheus", "uid": "prometheus"},
         "expr": "increase(expected_state_return_count_total[1h])",
@@ -47,6 +50,7 @@
       "type": "stat",
       "gridPos": {"h": 4, "w": 4, "x": 12, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
       "targets": [{
         "datasource": {"type": "prometheus", "uid": "prometheus"},
         "expr": "increase(federal_return_status_updated_count_total[1h])",
@@ -59,6 +63,7 @@
       "type": "stat",
       "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
       "targets": [{
         "datasource": {"type": "prometheus", "uid": "prometheus"},
         "expr": "increase(state_return_status_updated_count_total[1h])",
