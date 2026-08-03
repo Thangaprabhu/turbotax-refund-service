@@ -56,7 +56,7 @@ flowchart LR
     class A auth;
 ```
 
-### Taxpayer & filing lifecycle
+### Taxpayer
 
 **Flow 3 — Create taxpayer**
 
@@ -69,11 +69,23 @@ flowchart LR
     class T taxpayer;
 ```
 
-**Flow 4 — Create filing**
+**Flow 4 — List / get taxpayers**
 
 ```mermaid
 flowchart LR
-    C(["Client"]) -->|"POST .../filings"| R["refund-service"]
+    C(["Client"]) -->|"GET /taxpayers<br/>or /taxpayers/{id}"| T["taxpayer-service"]
+    T --> D[("taxpayers +<br/>user_taxpayer_access<br/>Postgres")]
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    class T taxpayer;
+```
+
+### Filing lifecycle
+
+**Flow 5 — Create filing**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"POST .../filings"| R["FilingService"]
     R -->|"access check"| T["taxpayer-service"]
     R -->|"/predictions"| AI["ai-service"]
     R --> D[("DynamoDB<br/>status = RECEIVED")]
@@ -86,23 +98,53 @@ flowchart LR
     class AI ai;
 ```
 
-**Flow 5 — IRS status update → guidance**
+**Flow 6 — List / get filings**
 
 ```mermaid
 flowchart LR
-    C(["Client"]) -->|"PATCH .../status"| R["refund-service"]
+    C(["Client"]) -->|"GET .../filings, /latest,<br/>or /{year}/{form}/{jurisdiction}"| R["FilingService"]
     R -->|"access check"| T["taxpayer-service"]
-    R -->|"/predictions"| AI1["ai-service"]
-    R --> D[("DynamoDB<br/>+ evict Redis")]
-    R -.->|"refund.status.updated"| K[["Kafka"]]
-    R -->|"FLAGGED · UNDER_REVIEW ·<br/>APPROVED · SENT"| G["ai-service /guidance<br/>situation_key → Ollama"]
-    R -->|"RECEIVED · DEPOSITED"| N(["no guidance needed"])
+    R --> D[("Redis cache,<br/>else DynamoDB")]
+    R -->|"backfill if stale/missing"| AI["ai-service /predictions"]
     classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
     classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
     classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
     class R refund;
     class T taxpayer;
-    class AI1,G ai;
+    class AI ai;
+```
+
+**Flow 7 — Update filing status**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"PATCH .../status"| R["StatusUpdateService"]
+    R -->|"access check"| T["taxpayer-service"]
+    R -->|"/predictions"| AI["ai-service"]
+    R --> D[("DynamoDB<br/>+ evict Redis")]
+    R -.->|"refund.status.updated"| K[["Kafka"]]
+    classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class R refund;
+    class T taxpayer;
+    class AI ai;
+```
+
+**Flow 8 — Get guidance for a filing**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"GET .../guidance"| G1["GuidanceService"]
+    G1 -->|"resolve filing<br/>(FilingService: access check + cache/backfill)"| T["taxpayer-service"]
+    G1 -->|"FLAGGED · UNDER_REVIEW ·<br/>APPROVED · SENT"| G2["ai-service /guidance<br/>situation_key → Ollama"]
+    G1 -->|"RECEIVED · DEPOSITED"| N(["no guidance needed"])
+    classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class G1 refund;
+    class T taxpayer;
+    class G2 ai;
 ```
 
 ## API workflows
@@ -167,6 +209,18 @@ tokens, every other service just validates or forwards one.
 </details>
 
 <details>
+<summary><strong>Update filing status</strong> — <code>PATCH .../{sk}/status</code></summary>
+
+1. Client → **refund-service**
+2. refund-service → **taxpayer-service** to confirm access
+3. Loads the filing from DynamoDB, applies the new status
+4. refund-service → **ai-service** `/predictions` for a refreshed estimate
+5. Saves to DynamoDB, evicts the Redis cache entry for that taxpayer
+6. Publishes a `refund.status.updated` event to Kafka (old status → new status)
+7. Returns the updated filing
+</details>
+
+<details>
 <summary><strong>Get guidance for a filing</strong> — <code>GET .../{taxYear}/{formType}/{jurisdiction}/guidance</code></summary>
 
 1. Client → **refund-service**
@@ -178,18 +232,6 @@ tokens, every other service just validates or forwards one.
    plain concatenation if Ollama is slow, down, or returns nothing usable
 6. Returns `204` if the filing's status doesn't need guidance (e.g. `RECEIVED`, `DEPOSITED`),
    otherwise the narrative + source docs
-</details>
-
-<details>
-<summary><strong>Update filing status</strong> — <code>PATCH .../{sk}/status</code></summary>
-
-1. Client → **refund-service**
-2. refund-service → **taxpayer-service** to confirm access
-3. Loads the filing from DynamoDB, applies the new status
-4. refund-service → **ai-service** `/predictions` for a refreshed estimate
-5. Saves to DynamoDB, evicts the Redis cache entry for that taxpayer
-6. Publishes a `refund.status.updated` event to Kafka (old status → new status)
-7. Returns the updated filing
 </details>
 
 ## Getting started
