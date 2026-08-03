@@ -19,11 +19,19 @@ test.describe("RAG refund guidance", () => {
     await row.click();
 
     await expect(page.getByText("Taking longer than the standard cycle")).toBeVisible();
-    // Narrative is retrieved from the knowledge base, not hardcoded -- confirms the RAG call happened.
-    await expect(page.getByText(/examined more closely/i)).toBeVisible();
+    // ActionGuidanceCard renders `guidance?.narrative ?? config.body` -- the RAG narrative
+    // fully replaces this static fallback string when the API call succeeds. Asserting the
+    // fallback is gone confirms the RAG call happened without depending on the LLM's exact
+    // wording, which isn't stable (Ollama rewrites the retrieved docs, it doesn't quote them).
+    // ai-service's own Ollama call can take ~4s and has an 8s fallback timeout (see
+    // ai-service/README.md) -- the default 5s Playwright assertion timeout is too tight
+    // against that, so both of these give it real headroom instead of racing it.
+    const staticFallbackBody =
+      "Returns claiming certain credits (like EITC or the Additional Child Tax Credit) or selected for manual review can take significantly longer than the typical 21-day cycle. This is usually automatic and doesn't require any action from you.";
+    await expect(page.getByText(staticFallbackBody, { exact: true })).toHaveCount(0, { timeout: 12_000 });
 
     const sourcesToggle = page.getByText(/^Sources \(\d+\)$/);
-    await expect(sourcesToggle).toBeVisible();
+    await expect(sourcesToggle).toBeVisible({ timeout: 12_000 });
     await sourcesToggle.click();
 
     const sourceLinks = page.locator("details", { has: sourcesToggle }).getByRole("link");
