@@ -4,5 +4,6 @@ providers:
   - name: turbotax
     folder: TurboTax
     type: file
+    allowUiUpdates: true
     options:
       path: /etc/grafana/provisioning/dashboards
