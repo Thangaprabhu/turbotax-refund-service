@@ -14,8 +14,8 @@ flagged, under review, or already on its way.
 
 > Simplified for presentation — the "API Gateway" box is illustrative. In this repo, Vite's
 > dev-server proxy is what actually routes each path prefix to its service on `localhost`;
-> there is no real gateway tier yet. See [Trade-offs](docs/) for the full list of what's real
-> vs. simplified.
+> there is no real gateway tier yet. See [Trade-offs](docs/trade-offs.md) for the full list of
+> what's real vs. simplified.
 
 | Service | Port | Owns | Depends on |
 |---|---|---|---|
@@ -267,6 +267,7 @@ traces to Jaeger — end to end across a single request, not just per-service.
 ## Design docs
 
 - [`docs/ai-refund-prediction-scope.md`](docs/ai-refund-prediction-scope.md) — AI prediction & RAG guidance design
+- [`docs/trade-offs.md`](docs/trade-offs.md) — known gaps vs. a production system, and why
 - [`refund-rag-kb/README.md`](refund-rag-kb/README.md) — RAG knowledge base corpus notes
 - Full High-Level Design (data model, request flow, trade-offs, scale) — see the project [Wiki](../../wiki)
 
