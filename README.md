@@ -29,42 +29,81 @@ Each service has its own README with its API, config keys, and how to run/test i
 
 ## End-to-end flow
 
-The full journey from a new user to a deposited refund, across all 4 services. See
-[API workflows](#api-workflows) below for the granular per-endpoint steps behind each box.
+The full journey from a new user to a deposited refund, broken into one small diagram per
+step rather than one large connected graph — auth first, then the taxpayer/filing lifecycle.
+See [API workflows](#api-workflows) below for the granular steps behind each box.
+
+### Auth
+
+**Flow 1 — Register**
 
 ```mermaid
-flowchart TD
-    Start(["New user"]) --> Register["POST /auth/register"]
-    Register --> Login["POST /auth/login → JWT"]
-    Login --> CreateTaxpayer["POST /taxpayers<br/>SSN/EIN encrypted via KMS"]
-    CreateTaxpayer --> CreateFiling["POST /taxpayers/id/filings"]
-
-    CreateFiling --> CheckAccess1["access check"]
-    CheckAccess1 --> Predict1["/predictions<br/>refund-timing estimate"]
-    Predict1 --> SaveFiling["save to DynamoDB, status = RECEIVED<br/>publish filing.created (Kafka)"]
-
-    SaveFiling --> StatusLoop{"IRS status changes<br/>PATCH .../status"}
-    StatusLoop --> CheckAccess2["access check"]
-    CheckAccess2 --> UpdateStatus["update + re-predict<br/>publish refund.status.updated (Kafka)<br/>evict Redis cache entry"]
-
-    UpdateStatus --> NeedsGuidance{"status needs guidance?<br/>FLAGGED · UNDER_REVIEW · APPROVED · SENT"}
-    NeedsGuidance -->|"yes"| Guidance["GET .../guidance<br/>situation_key lookup → Ollama narrative<br/>(plain-text fallback if Ollama is down)"]
-    Guidance --> StatusLoop
-    NeedsGuidance -->|"no, e.g. RECEIVED"| StatusLoop
-
-    StatusLoop -->|"DEPOSITED"| Done(["Refund received"])
-
+flowchart LR
+    C(["Client"]) -->|"POST /auth/register"| A["auth-service"]
+    A -->|"BCrypt hash"| D[("users<br/>Postgres")]
+    A --> J(["JWT issued"])
     classDef auth fill:#eef2ff,stroke:#6d5ce8,color:#1a1a2e;
-    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
-    classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
-    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
-    classDef neutral fill:#f7f9fc,stroke:#8b8f98,color:#1a1a2e;
+    class A auth;
+```
 
-    class Register,Login auth;
-    class CreateTaxpayer,CheckAccess1,CheckAccess2 taxpayer;
-    class CreateFiling,SaveFiling,StatusLoop,UpdateStatus refund;
-    class Predict1,NeedsGuidance,Guidance ai;
-    class Start,Done neutral;
+**Flow 2 — Login**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"POST /auth/login"| A["auth-service"]
+    A -->|"verify BCrypt hash"| D[("users<br/>Postgres")]
+    A --> J(["JWT issued"])
+    classDef auth fill:#eef2ff,stroke:#6d5ce8,color:#1a1a2e;
+    class A auth;
+```
+
+### Taxpayer & filing lifecycle
+
+**Flow 3 — Create taxpayer**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"POST /taxpayers"| T["taxpayer-service"]
+    T -->|"encrypt SSN/EIN"| K[["AWS KMS"]]
+    T --> D[("taxpayers<br/>Postgres")]
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    class T taxpayer;
+```
+
+**Flow 4 — Create filing**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"POST .../filings"| R["refund-service"]
+    R -->|"access check"| T["taxpayer-service"]
+    R -->|"/predictions"| AI["ai-service"]
+    R --> D[("DynamoDB<br/>status = RECEIVED")]
+    R -.->|"filing.created"| K[["Kafka"]]
+    classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class R refund;
+    class T taxpayer;
+    class AI ai;
+```
+
+**Flow 5 — IRS status update → guidance**
+
+```mermaid
+flowchart LR
+    C(["Client"]) -->|"PATCH .../status"| R["refund-service"]
+    R -->|"access check"| T["taxpayer-service"]
+    R -->|"/predictions"| AI1["ai-service"]
+    R --> D[("DynamoDB<br/>+ evict Redis")]
+    R -.->|"refund.status.updated"| K[["Kafka"]]
+    R -->|"FLAGGED · UNDER_REVIEW ·<br/>APPROVED · SENT"| G["ai-service /guidance<br/>situation_key → Ollama"]
+    R -->|"RECEIVED · DEPOSITED"| N(["no guidance needed"])
+    classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class R refund;
+    class T taxpayer;
+    class AI1,G ai;
 ```
 
 ## API workflows
