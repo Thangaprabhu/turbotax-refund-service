@@ -25,6 +25,53 @@ Port: **8083** · no auth (internal-only, not exposed to the client)
 
 Both return `204 No Content` when nothing applies (e.g. status already `DEPOSITED`).
 
+## Flows
+
+One diagram per case — including the branches inside each one, not just the happy path.
+
+**Case 1 — Refund-timing prediction**
+
+```mermaid
+flowchart LR
+    C(["refund-service"]) -->|"GET /predictions"| P["RulesEngineRefundPredictor"]
+    P --> D{"status?"}
+    D -->|"RECEIVED · DEPOSITED"| N1(["204 No Content<br/>no signal yet / already landed"])
+    D -->|"APPROVED · SENT ·<br/>UNDER_REVIEW · FLAGGED"| E["look up base cycle-days by form type,<br/>apply state multiplier if non-federal"]
+    E --> R1(["200: predictedDays,<br/>confidence, model = rules-v1"])
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class P,E ai;
+```
+
+**Case 2 — RAG guidance retrieval**
+
+```mermaid
+flowchart LR
+    C(["refund-service"]) -->|"GET /guidance"| G["RefundGuidanceService"]
+    G --> D1{"status eligible?<br/>FLAGGED · UNDER_REVIEW ·<br/>APPROVED · SENT"}
+    D1 -->|"no, e.g. RECEIVED"| N1(["204 No Content"])
+    D1 -->|"yes"| K["build situation_key<br/>e.g. FLAGGED_INDIVIDUAL_FEDERAL"]
+    K --> T["findTopDocIds(situation_key)"]
+    T --> D2{"any doc IDs<br/>precomputed for this key?"}
+    D2 -->|"no"| N2(["204 No Content"])
+    D2 -->|"yes"| Doc["fetch docs by ID,<br/>restore relevance order"]
+    Doc --> S["NarrativeSynthesizer.synthesize()<br/>— see Case 3"]
+    S --> R1(["200: situation_key,<br/>narrative, source docs"])
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class G,K,T,Doc,S ai;
+```
+
+**Case 3 — Ollama narrative synthesis (inside Case 2)**
+
+```mermaid
+flowchart LR
+    S(["synthesize(docs)"]) --> Call["POST localhost:11434/api/generate<br/>llama3.2:3b"]
+    Call -->|"success, non-blank text"| R1(["rewritten one-paragraph narrative"])
+    Call -->|"blank/missing response,<br/>timeout, or connection error"| F["log a warning<br/>(never surfaced as an error)"]
+    F --> R2(["fallback: docs joined as plain text"])
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class Call,F ai;
+```
+
 ## Config (`application.yml`)
 
 | Key | Purpose |
