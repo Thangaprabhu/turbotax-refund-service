@@ -35,3 +35,28 @@ through today.
 and database (`turbotax`) — different tables, same server. Each service still only touches its
 own tables, but there's no infrastructure boundary enforcing that, and a single Postgres
 outage takes down 3 of the 4 services at once.
+
+### No sharding strategy
+
+Neither datastore has a plan for horizontal data partitioning as volume grows. Postgres is a
+single unsharded instance (see above — shared across 3 services, let alone split further).
+DynamoDB partitions automatically by `taxpayerId`, which is fine for even distribution today,
+but there's no fallback (e.g. a random/compound key suffix) if one taxpayer's filing count
+ever became a genuine hot-partition outlier. "Scales independently" describes the service
+shape, not a tested plan for either database running out of room.
+
+### No notification service (Email / App Push / SMS)
+
+`refund-service` publishes `filing.created` and `refund.status.updated` to Kafka, but nothing
+consumes either topic to actually notify a user their status changed — see
+[`FilingEventProducer`](../refund-service/src/main/java/com/turbotax/refund/kafka/producer/FilingEventProducer.java).
+A taxpayer only finds out by opening the app and reading the page. These events exist as the
+intended integration point, but the notification service itself — and its email/push/SMS
+provider integrations — was never built.
+
+**What that costs**: no email, mobile push, or SMS ever reaches a user, no matter how their
+refund status changes.
+
+**Why not yet**: the two Kafka topics were built anticipating this consumer, but building the
+notification service, its provider integrations (SES/SendGrid, FCM/APNs, Twilio-style SMS),
+and per-user notification preferences was out of scope for this demo.
