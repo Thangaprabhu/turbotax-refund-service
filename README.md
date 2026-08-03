@@ -41,7 +41,6 @@ See [API workflows](#api-workflows) below for the granular steps behind each box
 flowchart LR
     C(["Client"]) -->|"POST /auth/register"| A["auth-service"]
     A -->|"BCrypt hash"| D[("users<br/>Postgres")]
-    A --> J(["JWT issued"])
     classDef auth fill:#eef2ff,stroke:#6d5ce8,color:#1a1a2e;
     class A auth;
 ```
@@ -52,7 +51,7 @@ flowchart LR
 flowchart LR
     C(["Client"]) -->|"POST /auth/login"| A["auth-service"]
     A -->|"verify BCrypt hash"| D[("users<br/>Postgres")]
-    A --> J(["JWT issued"])
+    A --> J(["Issue JWT"])
     classDef auth fill:#eef2ff,stroke:#6d5ce8,color:#1a1a2e;
     class A auth;
 ```
