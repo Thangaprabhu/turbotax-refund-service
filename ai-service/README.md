@@ -29,6 +29,45 @@ Both return `204 No Content` when nothing applies (e.g. status already `DEPOSITE
 
 One diagram per case — including the branches inside each one, not just the happy path.
 
+**Case 0 — Building `refund_guidance_situations` (offline, precondition for Case 2)**
+
+Case 2's `findTopDocIds(situation_key)` lookup only returns anything because this table was
+populated ahead of time by [`ml/rag/build_knowledge_base.py`](../ml/rag/build_knowledge_base.py)
+— a script run manually, not called by any Java service at request time:
+
+1. Every doc in `knowledge_base.DOCS` gets embedded locally via **fastembed**
+   (`BAAI/bge-small-en-v1.5`, no API key, no network call) and inserted into
+   `refund_guidance_docs`, along with its `entity_types`/`jurisdictions` tags and
+   `simulated_internal_content` flag.
+2. Every situation in `knowledge_base.SITUATIONS` — the 16 enumerable
+   `{status} × {INDIVIDUAL|BUSINESS} × {FEDERAL|STATE}` combinations — has its query
+   `description` text embedded the same way.
+3. For each situation: a **structured pre-filter** first (`applicable_entity_types`/
+   `applicable_jurisdictions` array-overlap against that situation's dimensions), *then* a real
+   **pgvector cosine-similarity** ranking (`embedding <=> ...`) among only the docs that passed
+   the filter — top 4 by similarity.
+4. Those 4 doc IDs are written into `refund_guidance_situations.top_doc_ids` for that
+   `situation_key`, alongside the situation's own embedding.
+
+```mermaid
+flowchart LR
+    KB["knowledge_base.py<br/>DOCS + SITUATIONS"] --> E1["embed every doc's content<br/>fastembed: BAAI/bge-small-en-v1.5"]
+    E1 --> Docs[("refund_guidance_docs<br/>content, embedding, entity_types,<br/>jurisdictions, simulated flag")]
+    KB --> E2["embed every situation's<br/>description text"]
+    Docs -.->|"candidates"| Filter["pre-filter: entity_type +<br/>jurisdiction array-overlap"]
+    E2 --> Filter
+    Filter --> Rank["pgvector cosine similarity (&lt;=&gt;)<br/>rank filtered candidates, take top 4"]
+    Rank --> Sit[("refund_guidance_situations<br/>situation_key, description,<br/>embedding, top_doc_ids")]
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    class E1,E2,Filter,Rank ai;
+```
+
+Re-run this script any time `knowledge_base.py` changes — nothing does it automatically.
+Retrieval being precomputed offline rather than a live query per request is itself a documented
+trade-off (HLD reference doc, Sheet 06 #5) — it only holds up because the situation space is
+small and enumerable (16 keys); a larger or dynamic corpus would need this to become a live
+pgvector query instead.
+
 **Case 1 — Refund-timing prediction**
 
 ```mermaid
