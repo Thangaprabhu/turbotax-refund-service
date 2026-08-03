@@ -27,6 +27,46 @@ flagged, under review, or already on its way.
 
 Each service has its own README with its API, config keys, and how to run/test it standalone.
 
+## End-to-end flow
+
+The full journey from a new user to a deposited refund, across all 4 services. See
+[API workflows](#api-workflows) below for the granular per-endpoint steps behind each box.
+
+```mermaid
+flowchart TD
+    Start(["New user"]) --> Register["POST /auth/register"]
+    Register --> Login["POST /auth/login → JWT"]
+    Login --> CreateTaxpayer["POST /taxpayers<br/>SSN/EIN encrypted via KMS"]
+    CreateTaxpayer --> CreateFiling["POST /taxpayers/id/filings"]
+
+    CreateFiling --> CheckAccess1["access check"]
+    CheckAccess1 --> Predict1["/predictions<br/>refund-timing estimate"]
+    Predict1 --> SaveFiling["save to DynamoDB, status = RECEIVED<br/>publish filing.created (Kafka)"]
+
+    SaveFiling --> StatusLoop{"IRS status changes<br/>PATCH .../status"}
+    StatusLoop --> CheckAccess2["access check"]
+    CheckAccess2 --> UpdateStatus["update + re-predict<br/>publish refund.status.updated (Kafka)<br/>evict Redis cache entry"]
+
+    UpdateStatus --> NeedsGuidance{"status needs guidance?<br/>FLAGGED · UNDER_REVIEW · APPROVED · SENT"}
+    NeedsGuidance -->|"yes"| Guidance["GET .../guidance<br/>situation_key lookup → Ollama narrative<br/>(plain-text fallback if Ollama is down)"]
+    Guidance --> StatusLoop
+    NeedsGuidance -->|"no, e.g. RECEIVED"| StatusLoop
+
+    StatusLoop -->|"DEPOSITED"| Done(["Refund received"])
+
+    classDef auth fill:#eef2ff,stroke:#6d5ce8,color:#1a1a2e;
+    classDef taxpayer fill:#e8f9fb,stroke:#0e91a8,color:#0d3336;
+    classDef refund fill:#eefcf3,stroke:#1c9a5b,color:#0d3d24;
+    classDef ai fill:#fff8ec,stroke:#d9820b,color:#4d3200;
+    classDef neutral fill:#f7f9fc,stroke:#8b8f98,color:#1a1a2e;
+
+    class Register,Login auth;
+    class CreateTaxpayer,CheckAccess1,CheckAccess2 taxpayer;
+    class CreateFiling,SaveFiling,StatusLoop,UpdateStatus refund;
+    class Predict1,NeedsGuidance,Guidance ai;
+    class Start,Done neutral;
+```
+
 ## API workflows
 
 Step-by-step for each operation — which service gets called, in what order, and what it
